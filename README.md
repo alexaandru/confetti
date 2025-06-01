@@ -24,6 +24,16 @@ and this package will load them all. And you can also load from JSON files becau
 - **Testable by example:** Code coverage is achieved with concise, real-world examples that
   double as documentation;
 - **Minimal dependencies:** Only SSM loader pulls in AWS SDK v2, stdlib for everything else.
+- **Unknown field/var detection:** Optionally error if unknown fields/vars are present in the data
+  but not in the target config.
+
+```go
+cfg := MyConfig{}
+err := confetti.Load(&cfg, confetti.WithErrOnUnknown(), confetti.WithJSON("./config.json"))
+if errors.Is(err, confetti.ErrUnknownFields) {
+    // handle unknown fields error
+}
+```
 
 ## Usage
 

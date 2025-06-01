@@ -3,8 +3,8 @@ package confetti
 import (
 	"cmp"
 	"context"
-	"encoding/json"
 	"fmt"
+	"strings"
 
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/ssm"
@@ -19,7 +19,7 @@ type ssmLoader struct {
 
 const DefaultAWSRegion = "us-east-1"
 
-func (s ssmLoader) Load(config any) (err error) {
+func (s ssmLoader) Load(config any, ownConfig *confetti) (err error) {
 	cfgOpts := []func(*awsconfig.LoadOptions) error{awsconfig.WithRegion(cmp.Or(s.awsRegion, DefaultAWSRegion))}
 
 	if s.profile != "" {
@@ -45,5 +45,11 @@ func (s ssmLoader) Load(config any) (err error) {
 		return fmt.Errorf("parameter %s not found or has no value", s.key)
 	}
 
-	return json.Unmarshal([]byte(*resp.Parameter.Value), config)
+	errOnUnknown := false
+
+	if ownConfig != nil {
+		errOnUnknown = ownConfig.errOnUnknown
+	}
+
+	return loadJSON(strings.NewReader(*resp.Parameter.Value), config, errOnUnknown)
 }

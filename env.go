@@ -4,8 +4,10 @@ import (
 	"cmp"
 	"errors"
 	"fmt"
+	"maps"
 	"os"
 	"reflect"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -20,13 +22,32 @@ type envLoader struct {
 
 const DefaultSeparator = ","
 
-func (e envLoader) Load(config any) (err error) {
-	return loadEnv(config, e.prefix, e.separator)
+func (e envLoader) Load(config any, ownConfig *confetti) (err error) {
+	var errOnUnknown bool
+
+	if ownConfig != nil {
+		errOnUnknown = ownConfig.errOnUnknown
+	}
+
+	return loadEnv(config, e.prefix, e.separator, errOnUnknown)
 }
 
 // loadEnv recursively sets struct fields from env vars for arbitrarily deep nesting.
 // If prefix is not empty, it is used as a prefix for the environment variable.
-func loadEnv(config any, prefix, separator string) error {
+func loadEnv(config any, prefix, separator string, errOnUnknown bool) error {
+	var unknowns map[string]struct{}
+
+	if prefix != "" && errOnUnknown {
+		unknowns = map[string]struct{}{}
+
+		for _, env := range os.Environ() {
+			parts := strings.SplitN(env, "=", 2)
+			if len(parts) == 2 && strings.HasPrefix(parts[0], strings.ToUpper(prefix)+"_") {
+				unknowns[parts[0]] = struct{}{}
+			}
+		}
+	}
+
 	v := reflect.ValueOf(config)
 	if v.Kind() != reflect.Ptr || v.Elem().Kind() != reflect.Struct {
 		return errors.New("config must be pointer to struct")
@@ -62,7 +83,7 @@ func loadEnv(config any, prefix, separator string) error {
 				subPrefix = prefix + "_" + name
 			}
 
-			if err := loadEnv(fieldVal.Addr().Interface(), subPrefix, separator); err != nil {
+			if err := loadEnv(fieldVal.Addr().Interface(), subPrefix, separator, errOnUnknown); err != nil {
 				return err
 			}
 
@@ -73,6 +94,8 @@ func loadEnv(config any, prefix, separator string) error {
 		if !ok {
 			continue
 		}
+
+		delete(unknowns, envName)
 
 		switch fieldVal.Kind() { //nolint:exhaustive // ok
 		case reflect.String:
@@ -162,6 +185,13 @@ func loadEnv(config any, prefix, separator string) error {
 
 			fieldVal.Set(slice)
 		}
+	}
+
+	if len(unknowns) > 0 {
+		unk := slices.Collect(maps.Keys(unknowns))
+		slices.Sort(unk)
+
+		return fmt.Errorf("unknown environment variables: %v", unk)
 	}
 
 	return nil

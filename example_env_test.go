@@ -166,6 +166,7 @@ func ExampleLoad_env_error_parse_int() {
 func ExampleLoad_env_struct_tag_override() {
 	os.Setenv("CUSTOM_PORT", "9999")
 	os.Setenv("MYAPP4_DEBUG", "true")
+	os.Setenv("MYAPP4_UNUSED", "unknown") // should be ignored
 	os.Setenv("CUSTOM_NESTED_VALUE", "tagged")
 
 	type TaggedConfig struct {
@@ -183,4 +184,27 @@ func ExampleLoad_env_struct_tag_override() {
 	// Output:
 	// Port=9999 Debug=true Nested.Value=tagged
 	// <nil>
+}
+
+func ExampleLoad_env_error_on_unknown() {
+	os.Setenv("MYAPP4_DEBUG", "true")
+	os.Setenv("MYAPP4_UNUSED", "unknown") // should trigger an error
+	os.Setenv("CUSTOM_PORT", "9999")
+	os.Setenv("CUSTOM_NESTED_VALUE", "tagged")
+
+	type TaggedConfig struct {
+		Port   int `env:"CUSTOM_PORT"`
+		Debug  bool
+		Nested struct {
+			Value string `env:"CUSTOM_NESTED_VALUE"`
+		}
+	}
+
+	cfg := &TaggedConfig{}
+	err := confetti.Load(cfg, confetti.WithErrOnUnknown(), confetti.WithEnv("MYAPP4"))
+	fmt.Printf("Port=%d Debug=%v Nested.Value=%s\n", cfg.Port, cfg.Debug, cfg.Nested.Value)
+	fmt.Println(err)
+	// Output:
+	// Port=9999 Debug=true Nested.Value=tagged
+	// unknown environment variables: [MYAPP4_UNUSED]
 }

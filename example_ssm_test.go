@@ -14,7 +14,7 @@ import (
 // ExampleConfig is assumed to be defined in another test file and available here.
 
 func ExampleLoad_from_ssm() {
-	jsonValue := `{"Host":"ssmhost","Port":9000,"Debug":true,"Nested":{"Value":"ssmval","Deep":{"Foo":"ssmdeep"}}}`
+	jsonValue := `{"Host":"ssmhost","Port":9000,"Debug":true,"Nested":{"Value":"ssmval","Deep":{"Foo":"ssmdeep", "Unknown":"unknown"}}}`
 	ssmName := "CONFETTI_TEST"
 	region := "us-east-1"
 
@@ -37,19 +37,19 @@ func ExampleLoad_from_ssm() {
 	}
 
 	cfg := &ExampleConfig{}
-	if err := confetti.Load(cfg, confetti.WithSSM(ssmName, region)); err != nil {
-		panic(err)
-	}
+	err = confetti.Load(cfg, confetti.WithErrOnUnknown(), confetti.WithSSM(ssmName, region))
 
 	fmt.Printf("Host=%s\n", cfg.Host)
 	fmt.Printf("Port=%d\n", cfg.Port)
 	fmt.Printf("Debug=%v\n", cfg.Debug)
 	fmt.Printf("Nested.Value=%s\n", cfg.Nested.Value)
 	fmt.Printf("Nested.Deep.Foo=%s\n", cfg.Nested.Deep.Foo)
+	fmt.Printf("Error=%v\n", err)
 	// Output:
 	// Host=ssmhost
 	// Port=9000
 	// Debug=true
 	// Nested.Value=ssmval
 	// Nested.Deep.Foo=ssmdeep
+	// Error=unknown fields in config: json: unknown field "Unknown"
 }

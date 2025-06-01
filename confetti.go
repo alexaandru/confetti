@@ -9,13 +9,22 @@ import (
 // Loader is the interface implemented by all config loaders (env, SSM, JSON).
 // You can implement your own Loader to support custom sources.
 type Loader interface {
-	Load(config any) error
+	Load(targetConfig any, ownConfig *confetti) error
 }
 
-// Load applies one or more loader functions to populate the given config struct.
+type confetti struct {
+	errOnUnknown bool
+}
+
+// Load applies one or more loader functions to populate the given config which MUST be
+// a pointer to a struct.
 //
 // The first argument must be a pointer to a struct. Each loader (such as WithEnv, WithSSM, WithJSON)
 // is applied in order, with later loaders overriding values from earlier ones.
+//
+// You can optionally pass options.
+// Currently, the only supported option is WithErrOnUnknown, which controls whether to return an error
+// when unknown fields are present in the source but not defined in the target config.
 //
 // Returns an error if the config pointer is nil, not a struct, or if any loader fails.
 //
@@ -34,13 +43,31 @@ func Load(cfg any, ld Loader, opts ...Loader) (err error) {
 		return fmt.Errorf("config must be a pointer to a struct (got %T)", cfg)
 	}
 
+	c, optx, ldx := confetti{}, []Loader{}, []Loader{}
+
 	for _, ld := range append([]Loader{ld}, opts...) {
-		if err = ld.Load(cfg); err != nil {
+		switch ld.(type) {
+		case optsLoader:
+			optx = append(optx, ld)
+		default:
+			ldx = append(ldx, ld)
+		}
+	}
+
+	for _, ld := range append(optx, ldx...) {
+		if err = ld.Load(cfg, &c); err != nil {
 			return
 		}
 	}
 
 	return
+}
+
+// WithErrOnUnknown sets whether to return an error if is present in the source but
+// not defined in the config struct.
+// NOTE: It currently only applies to json and ssm loaders.
+func WithErrOnUnknown() optsLoader {
+	return optsLoader{errOnUnknown: true}
 }
 
 // WithEnv returns a loader that populates struct fields from environment variables.
