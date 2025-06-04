@@ -5,20 +5,32 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"os"
 )
 
-// jsonLoader loads config from a JSON file at the given path.
-type jsonLoader string
+// jsonLoader loads config from a JSON file, []byte, or io.Reader.
+type jsonLoader struct {
+	r   io.ReadSeeker
+	c   io.Closer
+	err error
+}
 
-var ErrUnknownFields = errors.New("unknown fields in config")
+var (
+	ErrUnknownFields = errors.New("unknown fields in config")
+	ErrNoDataSource  = errors.New("no data source for JSON loader")
+)
 
 func (j jsonLoader) Load(config any, ownConfig *confetti) (err error) {
-	f, err := os.Open(string(j))
-	if err != nil {
-		return
+	if j.err != nil {
+		return j.err
 	}
-	defer f.Close() //nolint:errcheck // ok
+
+	if j.c != nil {
+		defer j.c.Close() //nolint:errcheck // ok
+	}
+
+	if j.r == nil {
+		return ErrNoDataSource
+	}
 
 	var errOnUnknown bool
 
@@ -26,7 +38,7 @@ func (j jsonLoader) Load(config any, ownConfig *confetti) (err error) {
 		errOnUnknown = ownConfig.errOnUnknown
 	}
 
-	return loadJSON(f, config, errOnUnknown)
+	return loadJSON(j.r, config, errOnUnknown)
 }
 
 func loadJSON(r io.ReadSeeker, config any, errOnUnknown bool) (err error) {

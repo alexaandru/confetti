@@ -42,7 +42,7 @@ type ComplexConfig struct {
 	}
 }
 
-func ExampleLoad_from_env() {
+func ExampleLoad_env() {
 	os.Setenv("MYAPP1_HOST", "127.0.0.1")
 	os.Setenv("MYAPP1_PORT", "1234")
 	os.Setenv("MYAPP1_DEBUG", "true")

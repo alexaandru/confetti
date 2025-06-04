@@ -13,7 +13,7 @@ import (
 
 // ExampleConfig is assumed to be defined in another test file and available here.
 
-func ExampleLoad_from_ssm() {
+func ExampleLoad_ssm() {
 	jsonValue := `{"Host":"ssmhost","Port":9000,"Debug":true,"Nested":{"Value":"ssmval","Deep":{"Foo":"ssmdeep", "Unknown":"unknown"}}}`
 	ssmName := "CONFETTI_TEST"
 	region := "us-east-1"

@@ -1,8 +1,11 @@
 package confetti
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
+	"io"
+	"os"
 	"reflect"
 )
 
@@ -106,7 +109,29 @@ func WithSSM(key string, opts ...string) ssmLoader {
 	return ssmLoader{key: key, awsRegion: awsRegion, profile: profile}
 }
 
-// WithJSON returns a loader that loads the config struct from a JSON file at the given path.
-func WithJSON(path string) jsonLoader {
-	return jsonLoader(path)
+// WithJSON returns a loader that loads the config struct from a JSON source,
+// which can be: a file path (string), []byte, io.ReadSeeker or io.Reader.
+func WithJSON(src any) jsonLoader {
+	switch v := src.(type) {
+	case string:
+		f, err := os.Open(v) //nolint:gosec // this is the whole point of the library.
+		if err != nil {
+			return jsonLoader{err: err}
+		}
+
+		return jsonLoader{r: f, c: f}
+	case []byte:
+		return jsonLoader{r: bytes.NewReader(v)}
+	case io.ReadSeeker:
+		return jsonLoader{r: v}
+	case io.Reader:
+		b, err := io.ReadAll(v)
+		if err != nil {
+			return jsonLoader{err: err}
+		}
+
+		return jsonLoader{r: bytes.NewReader(b)}
+	default:
+		return jsonLoader{err: fmt.Errorf("unsupported type for WithJSON: %T", src)}
+	}
 }
