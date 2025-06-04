@@ -16,6 +16,7 @@ type Loader interface {
 }
 
 type confetti struct {
+	mockedSSM    SSMAPI
 	errOnUnknown bool
 }
 
@@ -71,6 +72,11 @@ func Load(cfg any, ld Loader, opts ...Loader) (err error) {
 // NOTE: It currently only applies to json and ssm loaders.
 func WithErrOnUnknown() optsLoader {
 	return optsLoader{errOnUnknown: true}
+}
+
+// WithMockedSSM returns a loader that uses a mocked SSM client for testing.
+func WithMockedSSM(client SSMAPI) optsMockedSSMLoader {
+	return optsMockedSSMLoader{client: client}
 }
 
 // WithEnv returns a loader that populates struct fields from environment variables.

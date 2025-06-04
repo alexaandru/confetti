@@ -1,43 +1,30 @@
-//go:build testaws
-
 package confetti_test
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/alexaandru/confetti"
-	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/ssm"
+	ssmtypes "github.com/aws/aws-sdk-go-v2/service/ssm/types"
 )
 
-// ExampleConfig is assumed to be defined in another test file and available here.
+type mockSSM struct {
+	value string
+}
 
 func ExampleLoad_ssm() {
 	jsonValue := `{"Host":"ssmhost","Port":9000,"Debug":true,"Nested":{"Value":"ssmval","Deep":{"Foo":"ssmdeep", "Unknown":"unknown"}}}`
 	ssmName := "CONFETTI_TEST"
 	region := "us-east-1"
 
-	awsCfg, err := config.LoadDefaultConfig(context.Background(), config.WithRegion(region))
-	if err != nil {
-		panic("failed to load AWS config: " + err.Error())
-	}
-
-	ssmClient := ssm.NewFromConfig(awsCfg)
-	overwrite := true
-
-	_, err = ssmClient.PutParameter(context.Background(), &ssm.PutParameterInput{
-		Name:      &ssmName,
-		Type:      "String",
-		Value:     &jsonValue,
-		Overwrite: &overwrite,
-	})
-	if err != nil {
-		panic("failed to put SSM parameter: " + err.Error())
-	}
-
 	cfg := &ExampleConfig{}
-	err = confetti.Load(cfg, confetti.WithErrOnUnknown(), confetti.WithSSM(ssmName, region))
+	err := confetti.Load(cfg,
+		confetti.WithErrOnUnknown(),
+		confetti.WithMockedSSM(&mockSSM{value: jsonValue}),
+		confetti.WithSSM(ssmName, region),
+	)
 
 	fmt.Printf("Host=%s\n", cfg.Host)
 	fmt.Printf("Port=%d\n", cfg.Port)
@@ -52,4 +39,38 @@ func ExampleLoad_ssm() {
 	// Nested.Value=ssmval
 	// Nested.Deep.Foo=ssmdeep
 	// Error=unknown fields in config: json: unknown field "Unknown"
+}
+
+func ExampleLoad_ssm_param_not_found() {
+	cfg := &ExampleConfig{}
+	err := confetti.Load(cfg,
+		confetti.WithMockedSSM(&mockSSM{value: ""}),
+		confetti.WithSSM("missing", "us-east-1"),
+	)
+	fmt.Printf("Error: %v\n", err)
+	// Output:
+	// Error: parameter missing not found or has no value
+}
+
+func ExampleLoad_ssm_error() {
+	cfg := &ExampleConfig{}
+	err := confetti.Load(cfg,
+		confetti.WithMockedSSM(&mockSSM{value: "error: mock SSM error"}),
+		confetti.WithSSM("fail", "us-east-1"),
+	)
+	fmt.Printf("Error: %v\n", err)
+	// Output:
+	// Error: failed to get SSM parameter fail: mock SSM error
+}
+
+func (m *mockSSM) GetParameter(ctx context.Context, params *ssm.GetParameterInput, optFns ...func(*ssm.Options)) (*ssm.GetParameterOutput, error) {
+	if len(m.value) > 7 && m.value[:7] == "error: " {
+		return nil, errors.New(m.value[7:])
+	}
+
+	if m.value == "" {
+		return &ssm.GetParameterOutput{}, nil
+	}
+
+	return &ssm.GetParameterOutput{Parameter: &ssmtypes.Parameter{Value: &m.value}}, nil
 }

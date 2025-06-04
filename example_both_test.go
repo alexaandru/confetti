@@ -7,8 +7,6 @@ import (
 	"github.com/alexaandru/confetti"
 )
 
-// ExampleConfig is assumed to be defined in another test file and available here.
-
 func ExampleLoad_json_and_env() {
 	// JSON provides Host and Nested.Value, ENV provides Port, Debug, and Nested.Deep.Foo
 	jsonData := `{"Host":"localhost","Nested":{"Value":"foo"}}`

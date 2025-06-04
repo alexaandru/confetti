@@ -120,3 +120,19 @@ func ExampleLoad_json_unknown_fields() {
 	// Nested.Deep.Foo=baz
 	// Error=unknown fields in config: json: unknown field "Unused"
 }
+
+func ExampleLoad_json_unsupported_type() {
+	cfg := &ExampleConfig{}
+	err := confetti.Load(cfg, confetti.WithJSON(123))
+	fmt.Printf("Error: %v\n", err)
+	// Output:
+	// Error: unsupported type for WithJSON: int
+}
+
+func ExampleLoad_json_file_not_found() {
+	cfg := &ExampleConfig{}
+	err := confetti.Load(cfg, confetti.WithJSON("no_such_file.json"))
+	fmt.Printf("Error: %v\n", err)
+	// Output:
+	// Error: open no_such_file.json: no such file or directory
+}

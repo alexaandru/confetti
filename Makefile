@@ -14,9 +14,6 @@ test:
 	@go test -vet all -coverprofile=unit.cov -covermode=atomic $(OPTS) ./...
 	@go tool cover -func=unit.cov|tail -n1
 
-testaws:
-	@AWS_PROFILE=alex GOFLAGS=-tags=testaws make -s test
-
 doc:
 	@go tool -modfile=tools/go.mod godoc -http=:8080 -index
 

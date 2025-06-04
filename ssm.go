@@ -6,9 +6,15 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/ssm"
 )
+
+// SSMAPI is the minimal interface for SSM GetParameter used by ssmLoader.
+type SSMAPI interface {
+	GetParameter(ctx context.Context, params *ssm.GetParameterInput, optFns ...func(*ssm.Options)) (*ssm.GetParameterOutput, error)
+}
 
 // ssmLoader loads config from an AWS SSM parameter containing a JSON string.
 type ssmLoader struct {
@@ -26,12 +32,21 @@ func (s ssmLoader) Load(config any, ownConfig *confetti) (err error) {
 		cfgOpts = append(cfgOpts, awsconfig.WithSharedConfigProfile(s.profile))
 	}
 
-	cfg, err := awsconfig.LoadDefaultConfig(context.Background(), cfgOpts...)
-	if err != nil {
-		return fmt.Errorf("failed to load AWS config: %w", err)
+	var svc SSMAPI
+
+	if ownConfig != nil && ownConfig.mockedSSM != nil {
+		svc = ownConfig.mockedSSM
+	} else {
+		var cfg aws.Config
+
+		cfg, err = awsconfig.LoadDefaultConfig(context.Background(), cfgOpts...)
+		if err != nil {
+			return fmt.Errorf("failed to load AWS config: %w", err)
+		}
+
+		svc = ssm.NewFromConfig(cfg)
 	}
 
-	svc := ssm.NewFromConfig(cfg)
 	decrypted := true
 
 	resp, err := svc.GetParameter(context.Background(), &ssm.GetParameterInput{
