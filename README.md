@@ -7,12 +7,12 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/alexaandru/confetti.svg)](https://pkg.go.dev/github.com/alexaandru/confetti)
 [![Socket.dev](https://socket.dev/api/badge/go/package/github.com/alexaandru/confetti)](https://socket.dev/go/package/github.com/alexaandru/confetti)
 
-An opinionated take on Go configuration: put your secrets in SSM, put the rest in ENV vars
-and this package will load them all. And you can also load from JSON files because... why not?
+An opinionated take on handling Go configs: put your secrets in SSM, put the rest in ENV vars
+and this package will load them all. And you can also load from JSON because... why not?
 
 ## Why Confetti?
 
-- **Minimal API, maximal power:** One function (`Load()`), 3 `Loader`s and 6 ways to load the data
+- **Minimal API, maximal power:** One function (`Load()`), 3 `Loader` and 6 ways to load the data
   (ENV vars, SSM var holding a JSON, a local JSON file, a `[]byte` slice, an `io.Reader` or
   (preferred over `io.Reader`) an `io.ReadSeeker`);
 - **Minimal dependencies:** Only SSM loader pulls in AWS SDK v2, stdlib for everything else;
@@ -21,8 +21,8 @@ and this package will load them all. And you can also load from JSON files becau
 - **Robust ENV var support:** The env variable names are inferred from the struct field name
   and the passed prefix (if non empty) and can also be overriden on a per-field basis using the
   struct tag `env` (e.g. `env:"MYAPP_FOO"`);
-- **Robust type support:** Handles primitives, slices, nested structs, booleans (with many/common
-  string forms such as t/f, yes/no, etc.) and time durations out of the box;
+- **Robust type support:** When loading from env it handles primitives, slices, nested structs,
+  booleans (with many/common string forms such as t/f, yes/no, etc.) and time durations out of the box;
 - **Testable by example:** Code coverage is achieved with concise, real-world examples that
   double as documentation;
 - **Bring Your Own Loader:** If builtin loaders don't fit your needs, you ~~can easily implement
@@ -31,7 +31,7 @@ and this package will load them all. And you can also load from JSON files becau
   but not in the target config, but ONLY AFTER the data has been loaded, so you can
   still use the config and just warn about the unknown fields.
 
-## Loaders Quick Reference
+## Available Loaders
 
 | Loader           | Source Type         | Example Usage                                      |
 | ---------------- | ------------------- | -------------------------------------------------- |
@@ -57,7 +57,7 @@ func init() {
 }
 ```
 
-### Strict Mode Example
+### Strict Mode
 
 ```go
 cfg := MyConfig{}
@@ -67,7 +67,7 @@ if errors.Is(err, confetti.ErrUnknownFields) {
 }
 ```
 
-### Default values
+### Default Values
 
 No direct support for default values however, you can provide the `cfg` pre-populated
 and you can also [Make the zero value useful](https://www.youtube.com/watch?v=PAAkCSZUG1c&t=385s)
@@ -89,13 +89,9 @@ func init() {
 }
 ```
 
-For more examples see:
-
-- [ENV Loader Example](example_env_test.go);
-- [JSON Loader Example](example_json_test.go);
-- [ENV+JSON Loader Example](example_both_test.go);
-- [SSM Loader Example](example_ssm_test.go).
+For more examples see: [ENV](example_env_test.go), [JSON](example_json_test.go),
+[ENV+JSON](example_both_test.go) and [SSM](example_ssm_test.go) Loader examples.
 
 ## License
 
-MIT
+[MIT](LICENSE)
