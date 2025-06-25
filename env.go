@@ -211,17 +211,26 @@ func parseBool(s string) (bool, error) {
 	}
 }
 
-// camelToUpperSnake converts CamelCase to UPPER_SNAKE_CASE.
+// camelToUpperSnake converts CamelCase to UPPER_SNAKE_CASE,
+// with support for acronyms and abbreviations.
 func camelToUpperSnake(s string) string {
-	out := make([]rune, 0, len(s))
+	runes, out := []rune(s), []rune{}
 
-	for i, r := range s {
-		if i > 0 && r >= 'A' && r <= 'Z' {
+	for i := range runes {
+		if i > 0 && isUpper(runes[i]) && (isLower(runes[i-1]) || (i+1 < len(runes) && isLower(runes[i+1]))) {
 			out = append(out, '_')
 		}
 
-		out = append(out, r)
+		out = append(out, runes[i])
 	}
 
 	return strings.ToUpper(string(out))
+}
+
+func isUpper(r rune) bool {
+	return r >= 'A' && r <= 'Z'
+}
+
+func isLower(r rune) bool {
+	return r >= 'a' && r <= 'z'
 }

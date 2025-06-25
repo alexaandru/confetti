@@ -20,7 +20,8 @@ and this package will load them all. And you can also load from JSON because... 
   loaders override earlier ones;
 - **Robust ENV var support:** The env variable names are inferred from the struct field name
   and the passed prefix (if non empty) and can also be overriden on a per-field basis using the
-  struct tag `env` (e.g. `env:"MYAPP_FOO"`);
+  struct tag `env` (e.g. `env:"MYAPP_FOO"`).
+  Field names in CamelCase are converted to UPPER_SNAKE_CASE for environment variable lookup. Acronyms are handled so that `AWSRegion` becomes `AWS_REGION`, and `MyID` becomes `MY_ID`.
 - **Robust type support:** When loading from env it handles primitives, slices, nested structs,
   booleans (with many/common string forms such as t/f, yes/no, etc.) and time durations out of the box;
 - **Testable by example:** Code coverage is achieved with concise, real-world examples that

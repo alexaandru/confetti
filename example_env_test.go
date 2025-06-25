@@ -208,3 +208,21 @@ func ExampleLoad_env_error_on_unknown() {
 	// Port=9999 Debug=true Nested.Value=tagged
 	// unknown environment variables: [MYAPP4_UNUSED]
 }
+
+func ExampleLoad_env_with_acronyms() {
+	os.Setenv("MYAPP5_SQS_QUEUE", "sqs1")
+	os.Setenv("MYAPP5_SOME_SNS_TOPIC", "sns1") // should trigger an error
+
+	type TaggedConfig struct {
+		SQSQueue     string
+		SomeSNSTopic string
+	}
+
+	cfg := &TaggedConfig{}
+	err := confetti.Load(cfg, confetti.WithEnv("MYAPP5"))
+	fmt.Printf("SQS: %s; SNS: %s\n", cfg.SQSQueue, cfg.SomeSNSTopic)
+	fmt.Println(err)
+	// Output:
+	// SQS: sqs1; SNS: sns1
+	// <nil>
+}
