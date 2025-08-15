@@ -9,8 +9,10 @@ linters:
     - depguard
     - err113 # TODO
     - exhaustruct
+    - noinlineerr
     - nonamedreturns
     - wrapcheck # TODO
+    - wsl # obsoleted by wsl_v5
   settings:
     cyclop:
       max-complexity: 45 # TODO: reduce

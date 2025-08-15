@@ -1,8 +1,8 @@
 # Confetti 🎊
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Build and Test](https://github.com/alexaandru/confetti/actions/workflows/ci.yml/badge.svg)](https://github.com/alexaandru/confetti/actions/workflows/ci.yml)
-[![Coverage Status](https://coveralls.io/repos/github/alexaandru/confetti/badge.svg)](https://coveralls.io/github/alexaandru/confetti)
+[![Test](https://github.com/alexaandru/confetti/actions/workflows/ci.yml/badge.svg)](https://github.com/alexaandru/confetti/actions/workflows/ci.yml)
+![Coverage](coverage-badge.svg)
 [![Go Report Card](https://goreportcard.com/badge/github.com/alexaandru/confetti)](https://goreportcard.com/report/github.com/alexaandru/confetti)
 [![Go Reference](https://pkg.go.dev/badge/github.com/alexaandru/confetti.svg)](https://pkg.go.dev/github.com/alexaandru/confetti)
 [![Socket.dev](https://socket.dev/api/badge/go/package/github.com/alexaandru/confetti)](https://socket.dev/go/package/github.com/alexaandru/confetti)

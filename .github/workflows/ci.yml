@@ -1,32 +1,30 @@
 name: CI
 on:
   push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+    branches: ["*"]
 jobs:
-  test:
+  Test:
     runs-on: ubuntu-latest
-    name: Test
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref_name }}-test
+      cancel-in-progress: true
+    timeout-minutes: 2
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
-        with:
-          go-version-file: go.mod
+      - run: echo "::notice title=Go Version::$(go version)"
       - run: make test
-        # https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions
-      - run: echo "::notice title=Unit Test Coverage::$(go tool cover -func=unit.cov|tail -n1|tr -s "\t")"
-      - uses: coverallsapp/github-action@v2
-        with:
-          file: unit.cov
-  lint:
+  Lint:
     runs-on: ubuntu-latest
-    name: Lint
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref_name }}-lint
+      cancel-in-progress: true
+    timeout-minutes: 4
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/cache@v4
         with:
-          go-version-file: go.mod
+          key: golangci-lint-${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
       - run: make lint

@@ -49,15 +49,17 @@ func Load(cfg any, ld Loader, opts ...Loader) (err error) {
 
 	c, optx, ldx := confetti{}, []Loader{}, []Loader{}
 
+	// Separate loaders into "opts setters" and actual loaders.
 	for _, ld := range append([]Loader{ld}, opts...) {
 		switch ld.(type) {
-		case optsLoader:
+		case optsLoader, optsMockedSSMLoader:
 			optx = append(optx, ld)
 		default:
 			ldx = append(ldx, ld)
 		}
 	}
 
+	// Then ensure that setters are applied first.
 	for _, ld := range append(optx, ldx...) {
 		if err = ld.Load(cfg, &c); err != nil {
 			return
