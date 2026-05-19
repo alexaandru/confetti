@@ -16,11 +16,15 @@ import (
 // envLoader loads config from environment variables.
 // If string is not empty it is used as a prefix for the environment variable.
 type envLoader struct {
-	prefix    string
-	separator string
+	prefix       string
+	separator    string
+	mapSeparator string
 }
 
-const DefaultSeparator = ","
+const (
+	DefaultSeparator    = ","
+	DefaultMapSeparator = "="
+)
 
 func (e envLoader) Load(config any, ownConfig *confetti) (err error) {
 	var errOnUnknown bool
@@ -29,12 +33,12 @@ func (e envLoader) Load(config any, ownConfig *confetti) (err error) {
 		errOnUnknown = ownConfig.errOnUnknown
 	}
 
-	return loadEnv(config, e.prefix, e.separator, errOnUnknown)
+	return loadEnv(config, e.prefix, e.separator, e.mapSeparator, errOnUnknown)
 }
 
 // loadEnv recursively sets struct fields from env vars for arbitrarily deep nesting.
 // If prefix is not empty, it is used as a prefix for the environment variable.
-func loadEnv(config any, prefix, separator string, errOnUnknown bool) error {
+func loadEnv(config any, prefix, separator, mapSeparator string, errOnUnknown bool) error {
 	var unknowns map[string]struct{}
 
 	if prefix != "" && errOnUnknown {
@@ -86,7 +90,7 @@ func loadEnv(config any, prefix, separator string, errOnUnknown bool) error {
 				}
 			}
 
-			if err := loadEnv(fieldVal.Addr().Interface(), subPrefix, separator, errOnUnknown); err != nil {
+			if err := loadEnv(fieldVal.Addr().Interface(), subPrefix, separator, mapSeparator, errOnUnknown); err != nil {
 				return err
 			}
 
@@ -187,6 +191,28 @@ func loadEnv(config any, prefix, separator string, errOnUnknown bool) error {
 			}
 
 			fieldVal.Set(slice)
+		case reflect.Map:
+			keyKind := fieldVal.Type().Key().Kind()
+			valKind := fieldVal.Type().Elem().Kind()
+
+			if keyKind != reflect.String || valKind != reflect.String {
+				return fmt.Errorf("env %s: only map[string]string (or named string types) is supported", envName)
+			}
+
+			m := reflect.MakeMap(fieldVal.Type())
+
+			for pair := range strings.SplitSeq(val, separator) {
+				pair = strings.TrimSpace(pair)
+
+				k, v, okk := strings.Cut(pair, mapSeparator)
+				if !okk {
+					return fmt.Errorf("env %s: invalid map entry %q, expected key=value", envName, pair)
+				}
+
+				m.SetMapIndex(reflect.ValueOf(k).Convert(fieldVal.Type().Key()), reflect.ValueOf(v))
+			}
+
+			fieldVal.Set(m)
 		}
 	}
 

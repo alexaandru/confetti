@@ -257,6 +257,24 @@ func ExampleLoad_env_embedded_struct_no_prefix() {
 	// <nil>
 }
 
+func ExampleLoad_env_map() {
+	os.Setenv("MAP_LABELS", "env=prod,region=us-east-1")
+
+	type MapConfig struct {
+		Labels map[string]string
+	}
+
+	cfg := &MapConfig{}
+	err := confetti.Load(cfg, confetti.WithEnv("MAP"))
+	fmt.Printf("env=%s\n", cfg.Labels["env"])
+	fmt.Printf("region=%s\n", cfg.Labels["region"])
+	fmt.Println(err)
+	// Output:
+	// env=prod
+	// region=us-east-1
+	// <nil>
+}
+
 func ExampleLoad_env_with_acronyms() {
 	os.Setenv("MYAPP5_SQS_QUEUE", "sqs1")
 	os.Setenv("MYAPP5_SOME_SNS_TOPIC", "sns1") // should trigger an error

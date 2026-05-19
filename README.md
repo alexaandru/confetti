@@ -22,8 +22,9 @@ and this package will load them all. And you can also load from JSON because... 
   and the passed prefix (if non empty) and can also be overriden on a per-field basis using the
   struct tag `env` (e.g. `env:"MYAPP_FOO"`).
   Field names in CamelCase are converted to UPPER_SNAKE_CASE for environment variable lookup. Acronyms are handled so that `AWSRegion` becomes `AWS_REGION`, and `MyID` becomes `MY_ID`.
-- **Robust type support:** When loading from env it handles primitives, slices, nested structs,
-  booleans (with many/common string forms such as t/f, yes/no, etc.) and time durations out of the box;
+- **Robust type support:** When loading from env it handles primitives, slices, maps, nested structs,
+  anonymous embedded structs (fields load flat, without a type-name prefix), booleans (with
+  many/common string forms such as t/f, yes/no, etc.) and time durations out of the box;
 - **Testable by example:** Code coverage is achieved with concise, real-world examples that
   double as documentation;
 - **Bring Your Own Loader:** If builtin loaders don't fit your needs, you ~~can easily implement
@@ -37,7 +38,7 @@ and this package will load them all. And you can also load from JSON because... 
 | Loader           | Source Type         | Example Usage                                      |
 | ---------------- | ------------------- | -------------------------------------------------- |
 | WithErrOnUnknown | N/A                 | This sets the option to err on unknown fields/vars |
-| WithEnv          | ENV prefix (string) | `WithEnv("MYAPP")`                                 |
+| WithEnv          | ENV prefix (string) | `WithEnv("MYAPP")`, `WithEnv("MYAPP", ",", "=")` — optional 2nd arg overrides the slice separator (default `,`), optional 3rd arg overrides the map key=value separator (default `=`) |
 | WithSSM          | SSM key (string)    | `WithSSM("/my/key", "us-east-1")`                  |
 | WithJSON         | file path (string)  | `WithJSON("config.json")`                          |
 | WithJSON         | []byte              | `WithJSON([]byte(jsonData))`                       |

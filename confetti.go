@@ -93,7 +93,12 @@ func WithEnv(prefix string, opts ...string) envLoader {
 		separator = opts[0]
 	}
 
-	return envLoader{prefix: prefix, separator: separator}
+	mapSeparator := DefaultMapSeparator
+	if len(opts) > 1 {
+		mapSeparator = opts[1]
+	}
+
+	return envLoader{prefix: prefix, separator: separator, mapSeparator: mapSeparator}
 }
 
 // WithSSM returns a loader that loads the config struct from an AWS SSM parameter.
