@@ -209,6 +209,54 @@ func ExampleLoad_env_error_on_unknown() {
 	// unknown environment variables: [MYAPP4_UNUSED]
 }
 
+func ExampleLoad_env_embedded_struct() {
+	os.Setenv("EMBD_NAME", "alice")
+	os.Setenv("EMBD_VALUE", "hello")
+	os.Setenv("EMBD_COUNT", "3")
+
+	type Base struct {
+		Value string
+		Count int
+	}
+
+	type EmbeddedConfig struct {
+		Base // anonymous embedded — fields should load flat, not under EMBD_BASE_*
+
+		Name string
+	}
+
+	cfg := &EmbeddedConfig{}
+	err := confetti.Load(cfg, confetti.WithEnv("EMBD"))
+	fmt.Printf("Name=%s Value=%s Count=%d\n", cfg.Name, cfg.Value, cfg.Count)
+	fmt.Println(err)
+	// Output:
+	// Name=alice Value=hello Count=3
+	// <nil>
+}
+
+func ExampleLoad_env_embedded_struct_no_prefix() {
+	os.Setenv("NAME", "bob")
+	os.Setenv("VALUE", "world")
+
+	type Inner struct {
+		Value string
+	}
+
+	type FlatConfig struct {
+		Inner // anonymous embedded, no prefix
+
+		Name string
+	}
+
+	cfg := &FlatConfig{}
+	err := confetti.Load(cfg, confetti.WithEnv(""))
+	fmt.Printf("Name=%s Value=%s\n", cfg.Name, cfg.Value)
+	fmt.Println(err)
+	// Output:
+	// Name=bob Value=world
+	// <nil>
+}
+
 func ExampleLoad_env_with_acronyms() {
 	os.Setenv("MYAPP5_SQS_QUEUE", "sqs1")
 	os.Setenv("MYAPP5_SOME_SNS_TOPIC", "sns1") // should trigger an error

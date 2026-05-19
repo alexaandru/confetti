@@ -78,9 +78,12 @@ func loadEnv(config any, prefix, separator string, errOnUnknown bool) error {
 		}
 
 		if fieldVal.Kind() == reflect.Struct {
-			subPrefix := name
-			if prefix != "" && tagEnv == "" {
-				subPrefix = prefix + "_" + name
+			subPrefix := prefix
+			if !field.Anonymous {
+				subPrefix = name
+				if prefix != "" && tagEnv == "" {
+					subPrefix = prefix + "_" + name
+				}
 			}
 
 			if err := loadEnv(fieldVal.Addr().Interface(), subPrefix, separator, errOnUnknown); err != nil {

@@ -12,7 +12,7 @@ jobs:
       cancel-in-progress: true
     timeout-minutes: 2
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - run: echo "::notice title=Go Version::$(go version)"
       - run: make test
   Lint:
@@ -22,8 +22,8 @@ jobs:
       cancel-in-progress: true
     timeout-minutes: 4
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/cache@v4
+      - uses: actions/checkout@v6
+      - uses: actions/cache@v5
         with:
           key: golangci-lint-${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           path: |
