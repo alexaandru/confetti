@@ -23,18 +23,19 @@ type ExampleConfig struct {
 }
 
 type ComplexConfig struct {
-	Str    string
-	Int    int
-	Uint   uint
-	Bool   bool
-	Float  float64
-	Strs   []string
-	Ints   []int
-	Uints  []uint
-	Bools  []bool
-	Floats []float64
-	Dur    time.Duration
-	Nested struct {
+	Str       string
+	Int       int
+	Uint      uint
+	Bool      bool
+	Float     float64
+	Strs      []string
+	Ints      []int
+	Uints     []uint
+	Bools     []bool
+	Floats    []float64
+	Dur       time.Duration
+	EmptyStrs []string
+	Nested    struct {
 		Strs []string
 		Deep struct {
 			Int int
@@ -86,6 +87,7 @@ func ExampleLoad_env_complex() {
 	os.Setenv("CPLX_DUR", "1h30m")
 	os.Setenv("CPLX_NESTED_STRS", "x,y")
 	os.Setenv("CPLX_NESTED_DEEP_INT", "99")
+	os.Setenv("CPLX_EMPTY_STRS", "")
 
 	cfg := &ComplexConfig{}
 	if err := confetti.Load(cfg, confetti.WithEnv("CPLX")); err != nil {
@@ -103,6 +105,7 @@ func ExampleLoad_env_complex() {
 	fmt.Printf("Bools=%#v\n", cfg.Bools)
 	fmt.Printf("Floats=%#v\n", cfg.Floats)
 	fmt.Printf("Dur=%s\n", cfg.Dur)
+	fmt.Printf("EmptyStrs=%#v\n", cfg.EmptyStrs)
 	fmt.Printf("Nested.Strs=%#v\n", cfg.Nested.Strs)
 	fmt.Printf("Nested.Deep.Int=%d\n", cfg.Nested.Deep.Int)
 	// Output:
@@ -117,6 +120,7 @@ func ExampleLoad_env_complex() {
 	// Bools=[]bool(nil)
 	// Floats=[]float64{1.1, 2.2, 3.3}
 	// Dur=1h30m0s
+	// EmptyStrs=[]string(nil)
 	// Nested.Strs=[]string{"x", "y"}
 	// Nested.Deep.Int=99
 }
@@ -259,19 +263,23 @@ func ExampleLoad_env_embedded_struct_no_prefix() {
 
 func ExampleLoad_env_map() {
 	os.Setenv("MAP_LABELS", "env=prod,region=us-east-1")
+	os.Setenv("MAP_TAGS", "")
 
 	type MapConfig struct {
 		Labels map[string]string
+		Tags   map[string]string
 	}
 
 	cfg := &MapConfig{}
 	err := confetti.Load(cfg, confetti.WithEnv("MAP"))
 	fmt.Printf("env=%s\n", cfg.Labels["env"])
 	fmt.Printf("region=%s\n", cfg.Labels["region"])
+	fmt.Printf("tags-len=%d\n", len(cfg.Tags))
 	fmt.Println(err)
 	// Output:
 	// env=prod
 	// region=us-east-1
+	// tags-len=0
 	// <nil>
 }
 

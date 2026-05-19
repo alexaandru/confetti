@@ -147,6 +147,10 @@ func loadEnv(config any, prefix, separator, mapSeparator string, errOnUnknown bo
 
 			fieldVal.SetFloat(fv)
 		case reflect.Slice:
+			if val == "" {
+				continue
+			}
+
 			elemKind := fieldVal.Type().Elem().Kind()
 			parts := strings.Split(val, separator)
 			slice := reflect.MakeSlice(fieldVal.Type(), len(parts), len(parts))
@@ -192,6 +196,10 @@ func loadEnv(config any, prefix, separator, mapSeparator string, errOnUnknown bo
 
 			fieldVal.Set(slice)
 		case reflect.Map:
+			if val == "" {
+				continue
+			}
+
 			keyKind := fieldVal.Type().Key().Kind()
 			valKind := fieldVal.Type().Elem().Kind()
 
