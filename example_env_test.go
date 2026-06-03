@@ -43,6 +43,15 @@ type ComplexConfig struct {
 	}
 }
 
+type Severity int
+
+const (
+	SeverityUnknown Severity = iota
+	SeverityLow
+	SeverityMedium
+	SeverityHigh
+)
+
 func ExampleLoad_env() {
 	os.Setenv("MYAPP1_HOST", "127.0.0.1")
 	os.Setenv("MYAPP1_PORT", "1234")
@@ -280,6 +289,33 @@ func ExampleLoad_env_map() {
 	// env=prod
 	// region=us-east-1
 	// tags-len=0
+	// <nil>
+}
+
+func (s *Severity) UnmarshalText(b []byte) error {
+	switch string(b) {
+	case "low":
+		*s = SeverityLow
+	case "medium":
+		*s = SeverityMedium
+	case "high":
+		*s = SeverityHigh
+	default:
+		return fmt.Errorf("unknown severity: %q", b)
+	}
+
+	return nil
+}
+
+func ExampleLoad_env_text_unmarshaler() {
+	os.Setenv("ALERT_LEVEL", "high")
+
+	cfg := &struct{ Level Severity }{}
+	err := confetti.Load(cfg, confetti.WithEnv("ALERT"))
+	fmt.Printf("Level=%d\n", cfg.Level)
+	fmt.Println(err)
+	// Output:
+	// Level=3
 	// <nil>
 }
 

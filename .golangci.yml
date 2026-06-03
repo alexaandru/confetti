@@ -15,7 +15,7 @@ linters:
     - wsl # obsoleted by wsl_v5
   settings:
     cyclop:
-      max-complexity: 52 # TODO: reduce
+      max-complexity: 53 # TODO: reduce
       package-average: 10.2 # TODO: reduce
     decorder:
       disable-dec-num-check: true

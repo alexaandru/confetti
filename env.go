@@ -2,6 +2,7 @@ package confetti
 
 import (
 	"cmp"
+	"encoding"
 	"errors"
 	"fmt"
 	"maps"
@@ -53,7 +54,7 @@ func loadEnv(config any, prefix, separator, mapSeparator string, errOnUnknown bo
 	}
 
 	v := reflect.ValueOf(config)
-	if v.Kind() != reflect.Ptr || v.Elem().Kind() != reflect.Struct {
+	if v.Kind() != reflect.Pointer || v.Elem().Kind() != reflect.Struct {
 		return errors.New("config must be pointer to struct")
 	}
 
@@ -103,6 +104,14 @@ func loadEnv(config any, prefix, separator, mapSeparator string, errOnUnknown bo
 		}
 
 		delete(unknowns, envName)
+
+		if u, okk := fieldVal.Addr().Interface().(encoding.TextUnmarshaler); okk {
+			if err := u.UnmarshalText([]byte(val)); err != nil {
+				return fmt.Errorf("env %s: %w", envName, err)
+			}
+
+			continue
+		}
 
 		switch fieldVal.Kind() { //nolint:exhaustive // ok
 		case reflect.String:
