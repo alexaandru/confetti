@@ -23,8 +23,9 @@ deadcode:
 	@go tool -modfile=tools/go.mod deadcode -test ./...
 
 fmt:
-	@find -name "*.go"|xargs go tool -modfile=tools/go.mod gofumpt -extra -w
-	@find -name "*.go"|xargs go tool -modfile=tools/go.mod goimports -w
+	@go fmt ./...
+	@go tool -modfile=tools/go.mod goimports -l -w .
+	@go run mvdan.cc/gofumpt@v0.8.0 -l -w -extra .
 
 doc:
 	@go tool -modfile=tools/go.mod godoc -http=:6060 &

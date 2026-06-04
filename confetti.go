@@ -43,7 +43,7 @@ func Load(cfg any, ld Loader, opts ...Loader) (err error) {
 	}
 
 	v := reflect.ValueOf(cfg)
-	if v.Kind() != reflect.Ptr || v.Elem().Kind() != reflect.Struct {
+	if v.Kind() != reflect.Pointer || v.Elem().Kind() != reflect.Struct {
 		return fmt.Errorf("config must be a pointer to a struct (got %T)", cfg)
 	}
 

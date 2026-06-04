@@ -2,6 +2,7 @@ package confetti_test
 
 import (
 	"fmt"
+	"net/netip"
 	"os"
 	"time"
 
@@ -23,6 +24,11 @@ type ExampleConfig struct {
 }
 
 type ComplexConfig struct {
+	time.Time
+	netip.Addr
+	netip.AddrPort
+	netip.Prefix
+
 	Str       string
 	Int       int
 	Uint      uint
@@ -83,6 +89,7 @@ func ExampleLoad_env() {
 	// Ints=[]int{1, 2, 3}
 }
 
+//nolint:staticcheck // ok
 func ExampleLoad_env_complex() {
 	os.Setenv("CPLX_STR", "foo")
 	os.Setenv("CPLX_INT", "42")
@@ -93,7 +100,11 @@ func ExampleLoad_env_complex() {
 	os.Setenv("CPLX_INTS", "1,2,3")
 	os.Setenv("CPLX_UINTS", "4,5,6")
 	os.Setenv("CPLX_FLOATS", "1.1,2.2,3.3")
+	os.Setenv("CPLX_TIME", "2023-01-02T15:04:05Z")
 	os.Setenv("CPLX_DUR", "1h30m")
+	os.Setenv("CPLX_ADDR", "192.168.1.1")
+	os.Setenv("CPLX_ADDR_PORT", "192.168.1.1:8080")
+	os.Setenv("CPLX_PREFIX", "192.168.1.0/24")
 	os.Setenv("CPLX_NESTED_STRS", "x,y")
 	os.Setenv("CPLX_NESTED_DEEP_INT", "99")
 	os.Setenv("CPLX_EMPTY_STRS", "")
@@ -113,7 +124,11 @@ func ExampleLoad_env_complex() {
 	fmt.Printf("Uints=%#v\n", cfg.Uints)
 	fmt.Printf("Bools=%#v\n", cfg.Bools)
 	fmt.Printf("Floats=%#v\n", cfg.Floats)
-	fmt.Printf("Dur=%s\n", cfg.Dur)
+	fmt.Printf("Time=%s\n", cfg.Time)
+	fmt.Printf("Dur=%[1]d (%[1]s)\n", cfg.Dur)
+	fmt.Printf("Addr.IsValid=%v Addr.Is4=%v Addr.IsLoopback=%v\n", cfg.Addr.IsValid(), cfg.Addr.Is4(), cfg.Addr.IsLoopback())
+	fmt.Printf("AddrPort.Port=%d\n", cfg.AddrPort.Port())
+	fmt.Printf("Prefix.Bits=%d Prefix.Masked=%s\n", cfg.Prefix.Bits(), cfg.Prefix.Masked())
 	fmt.Printf("EmptyStrs=%#v\n", cfg.EmptyStrs)
 	fmt.Printf("Nested.Strs=%#v\n", cfg.Nested.Strs)
 	fmt.Printf("Nested.Deep.Int=%d\n", cfg.Nested.Deep.Int)
@@ -128,7 +143,11 @@ func ExampleLoad_env_complex() {
 	// Uints=[]uint{0x4, 0x5, 0x6}
 	// Bools=[]bool(nil)
 	// Floats=[]float64{1.1, 2.2, 3.3}
-	// Dur=1h30m0s
+	// Time=2023-01-02 15:04:05 +0000 UTC
+	// Dur=5400000000000 (1h30m0s)
+	// Addr.IsValid=true Addr.Is4=true Addr.IsLoopback=false
+	// AddrPort.Port=8080
+	// Prefix.Bits=24 Prefix.Masked=192.168.1.0/24
 	// EmptyStrs=[]string(nil)
 	// Nested.Strs=[]string{"x", "y"}
 	// Nested.Deep.Int=99

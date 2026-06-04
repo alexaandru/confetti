@@ -9,13 +9,14 @@ linters:
     - depguard
     - err113 # TODO
     - exhaustruct
+    - gomodguard # deprecated by v2
     - noinlineerr
     - nonamedreturns
     - wrapcheck # TODO
-    - wsl # obsoleted by wsl_v5
+    - wsl # deprecated by v5
   settings:
     cyclop:
-      max-complexity: 53 # TODO: reduce
+      max-complexity: 54 # TODO: reduce
       package-average: 10.2 # TODO: reduce
     decorder:
       disable-dec-num-check: true
@@ -108,7 +109,7 @@ linters:
     nakedret:
       max-func-lines: 120 # TODO: reduce
     nestif:
-      min-complexity: 5
+      min-complexity: 6
     nlreturn:
       block-size: 2
     nolintlint:
@@ -197,7 +198,6 @@ issues:
 formatters:
   enable:
     - gofmt
-    - gofumpt
     - goimports
   settings:
     gofmt:

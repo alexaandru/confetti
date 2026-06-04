@@ -77,12 +77,11 @@ func loadEnv(config any, prefix, separator, mapSeparator string, errOnUnknown bo
 		tagEnv := field.Tag.Get("env")
 		name := cmp.Or(tagEnv, camelToUpperSnake(field.Name))
 
-		envName := name
-		if prefix != "" && tagEnv == "" {
-			envName = prefix + "_" + name
-		}
-
 		if fieldVal.Kind() == reflect.Struct {
+			if _, ok := fieldVal.Addr().Interface().(encoding.TextUnmarshaler); ok {
+				goto NODIVE
+			}
+
 			subPrefix := prefix
 			if !field.Anonymous {
 				subPrefix = name
@@ -96,6 +95,14 @@ func loadEnv(config any, prefix, separator, mapSeparator string, errOnUnknown bo
 			}
 
 			continue
+		}
+
+	NODIVE:
+
+		envName := name
+
+		if prefix != "" && tagEnv == "" {
+			envName = prefix + "_" + name
 		}
 
 		val, ok := os.LookupEnv(envName)

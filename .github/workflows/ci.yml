@@ -12,7 +12,7 @@ jobs:
       cancel-in-progress: true
     timeout-minutes: 2
     steps:
-      - uses: actions/checkout@v6
+      - run: git clone --branch "${{ github.ref_name }}" "https://github.com/${{ github.repository }}.git" .
       - run: echo "::notice title=Go Version::$(go version)"
       - run: make test
   Lint:
@@ -20,13 +20,7 @@ jobs:
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref_name }}-lint
       cancel-in-progress: true
-    timeout-minutes: 4
+    timeout-minutes: 2
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/cache@v5
-        with:
-          key: golangci-lint-${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
+      - run: git clone --branch "${{ github.ref_name }}" "https://github.com/${{ github.repository }}.git" .
       - run: make lint
