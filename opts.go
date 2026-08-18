@@ -4,7 +4,7 @@ type optsLoader struct {
 	errOnUnknown bool
 }
 
-type optsMockedSSMLoader struct {
+type optsSSMClientLoader struct {
 	client SSMAPI
 }
 
@@ -13,7 +13,7 @@ func (o optsLoader) Load(_ any, ownConfig *confetti) (err error) {
 	return
 }
 
-func (o optsMockedSSMLoader) Load(_ any, ownConfig *confetti) (err error) {
-	ownConfig.mockedSSM = o.client
+func (o optsSSMClientLoader) Load(_ any, ownConfig *confetti) (err error) {
+	ownConfig.ssmClient = o.client
 	return
 }

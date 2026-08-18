@@ -78,7 +78,7 @@ func loadEnv(config any, prefix, separator, mapSeparator string, errOnUnknown bo
 		name := cmp.Or(tagEnv, camelToUpperSnake(field.Name))
 
 		if fieldVal.Kind() == reflect.Struct {
-			if _, ok := fieldVal.Addr().Interface().(encoding.TextUnmarshaler); ok {
+			if _, ok := reflect.TypeAssert[encoding.TextUnmarshaler](fieldVal.Addr()); ok {
 				goto NODIVE
 			}
 
@@ -112,7 +112,7 @@ func loadEnv(config any, prefix, separator, mapSeparator string, errOnUnknown bo
 
 		delete(unknowns, envName)
 
-		if u, okk := fieldVal.Addr().Interface().(encoding.TextUnmarshaler); okk {
+		if u, okk := reflect.TypeAssert[encoding.TextUnmarshaler](fieldVal.Addr()); okk {
 			if err := u.UnmarshalText([]byte(val)); err != nil {
 				return fmt.Errorf("env %s: %w", envName, err)
 			}

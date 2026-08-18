@@ -34,8 +34,8 @@ func (s ssmLoader) Load(config any, ownConfig *confetti) (err error) {
 
 	var svc SSMAPI
 
-	if ownConfig != nil && ownConfig.mockedSSM != nil {
-		svc = ownConfig.mockedSSM
+	if ownConfig != nil && ownConfig.ssmClient != nil {
+		svc = ownConfig.ssmClient
 	} else {
 		var cfg aws.Config
 

@@ -16,7 +16,7 @@ type Loader interface {
 }
 
 type confetti struct {
-	mockedSSM    SSMAPI
+	ssmClient    SSMAPI
 	errOnUnknown bool
 }
 
@@ -52,7 +52,7 @@ func Load(cfg any, ld Loader, opts ...Loader) (err error) {
 	// Separate loaders into "opts setters" and actual loaders.
 	for _, ld := range append([]Loader{ld}, opts...) {
 		switch ld.(type) {
-		case optsLoader, optsMockedSSMLoader:
+		case optsLoader, optsSSMClientLoader:
 			optx = append(optx, ld)
 		default:
 			ldx = append(ldx, ld)
@@ -76,9 +76,13 @@ func WithErrOnUnknown() optsLoader {
 	return optsLoader{errOnUnknown: true}
 }
 
-// WithMockedSSM returns a loader that uses a mocked SSM client for testing.
-func WithMockedSSM(client SSMAPI) optsMockedSSMLoader {
-	return optsMockedSSMLoader{client: client}
+// WithSSMClient returns a loader that uses the given SSM client instead of one
+// built from AWS config, e.g. a mock for testing or a preconfigured client of your own.
+//
+// When this is used, the region/profile options passed to WithSSM are ignored,
+// since no AWS config is loaded — configure the client itself instead.
+func WithSSMClient(client SSMAPI) optsSSMClientLoader {
+	return optsSSMClientLoader{client: client}
 }
 
 // WithEnv returns a loader that populates struct fields from environment variables.
@@ -105,6 +109,9 @@ func WithEnv(prefix string, opts ...string) envLoader {
 //
 // The key is the SSM parameter name. The optional region and profile arguments override the default AWS region/profile.
 // The SSM parameter value must be a JSON string matching the config struct.
+//
+// The region and profile arguments are ignored if WithSSMClient is also used, since in that
+// case no AWS config is loaded — configure the client itself instead.
 //
 // Usage:
 //

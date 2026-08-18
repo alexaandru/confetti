@@ -22,7 +22,7 @@ func ExampleLoad_ssm() {
 	cfg := &ExampleConfig{}
 	err := confetti.Load(cfg,
 		confetti.WithErrOnUnknown(),
-		confetti.WithMockedSSM(&mockSSM{value: jsonValue}),
+		confetti.WithSSMClient(&mockSSM{value: jsonValue}),
 		confetti.WithSSM(ssmName, region),
 	)
 
@@ -44,7 +44,7 @@ func ExampleLoad_ssm() {
 func ExampleLoad_ssm_param_not_found() {
 	cfg := &ExampleConfig{}
 	err := confetti.Load(cfg,
-		confetti.WithMockedSSM(&mockSSM{value: ""}),
+		confetti.WithSSMClient(&mockSSM{value: ""}),
 		confetti.WithSSM("missing", "us-east-1"),
 	)
 	fmt.Printf("Error: %v\n", err)
@@ -55,7 +55,7 @@ func ExampleLoad_ssm_param_not_found() {
 func ExampleLoad_ssm_error() {
 	cfg := &ExampleConfig{}
 	err := confetti.Load(cfg,
-		confetti.WithMockedSSM(&mockSSM{value: "error: mock SSM error"}),
+		confetti.WithSSMClient(&mockSSM{value: "error: mock SSM error"}),
 		confetti.WithSSM("fail", "us-east-1"),
 	)
 	fmt.Printf("Error: %v\n", err)
