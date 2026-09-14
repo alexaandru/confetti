@@ -35,6 +35,12 @@ func TestCamelToUpperSnake(t *testing.T) {
 		{"HTTPRequestID", "HTTP_REQUEST_ID"},
 		{"HTTPRequestId", "HTTP_REQUEST_ID"},
 		{"HTTPRequestIDTest", "HTTP_REQUEST_ID_TEST"},
+		{"UserIDs", "USER_IDS"},
+		{"FooBarIDs", "FOO_BAR_IDS"},
+		{"IDs", "IDS"},
+		{"APIs", "APIS"},
+		{"IDsList", "IDS_LIST"},
+		{"Cats", "CATS"},
 	}
 
 	for _, c := range cases {

@@ -270,7 +270,8 @@ func camelToUpperSnake(s string) string {
 	runes, out := []rune(s), []rune{}
 
 	for i := range runes {
-		if i > 0 && isUpper(runes[i]) && (isLower(runes[i-1]) || (i+1 < len(runes) && isLower(runes[i+1]))) {
+		nextIsNewWord := i+1 < len(runes) && isLower(runes[i+1]) && !isPluralS(runes, i)
+		if i > 0 && isUpper(runes[i]) && (isLower(runes[i-1]) || nextIsNewWord) {
 			out = append(out, '_')
 		}
 
@@ -278,6 +279,13 @@ func camelToUpperSnake(s string) string {
 	}
 
 	return strings.ToUpper(string(out))
+}
+
+// isPluralS reports whether runes[i+1] is a trailing "s" that pluralizes the
+// acronym ending at i (e.g. the "s" in "IDs" or "APIs") rather than starting
+// a new word, i.e. it isn't itself followed by further lowercase letters.
+func isPluralS(runes []rune, i int) bool {
+	return i+1 < len(runes) && runes[i+1] == 's' && (i+2 >= len(runes) || !isLower(runes[i+2]))
 }
 
 func isUpper(r rune) bool {

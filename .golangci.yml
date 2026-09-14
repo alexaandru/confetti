@@ -9,6 +9,7 @@ linters:
     - depguard
     - err113 # TODO
     - exhaustruct
+    - exhaustruct_v5
     - gomodguard # deprecated by v2
     - noinlineerr
     - nonamedreturns

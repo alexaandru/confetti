@@ -14,6 +14,7 @@ jobs:
     steps:
       - run: git clone --branch "${{ github.ref_name }}" "https://github.com/${{ github.repository }}.git" .
       - run: echo "::notice title=Go Version::$(go version)"
+      - run: go env -w GOTOOLCHAIN=go1.27.1+auto
       - run: make test
   Lint:
     runs-on: ubuntu-latest
@@ -23,4 +24,5 @@ jobs:
     timeout-minutes: 2
     steps:
       - run: git clone --branch "${{ github.ref_name }}" "https://github.com/${{ github.repository }}.git" .
+      - run: go env -w GOTOOLCHAIN=go1.27.1+auto
       - run: make lint
